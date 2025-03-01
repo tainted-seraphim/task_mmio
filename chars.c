@@ -33,6 +33,7 @@ enum char_type chars_get_esc_sequence(void)
 	char buff[8] = {27};
 	read(1, buff + 1, 7);
 	buff[7] = '\0';
+	/* This is ugly but I have to do this for input */
 	if (0 == strcmp(buff, TASK_MMIO_ESC_CURSOR_UP)) {
 		return CHAR_ARROW_UP;
 	}

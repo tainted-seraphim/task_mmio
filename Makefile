@@ -1,5 +1,5 @@
 CC = gcc
-CFLAGS = -std=c99 -pedantic -g -Wall -Wextra
+CFLAGS = -std=c99 -pedantic -g -Wall -Wextra -O2
 TARGET = mmio_io
 OBJECT = main.o\
 	 chars.o\
@@ -10,10 +10,19 @@ OBJECT = main.o\
 	 terminal.o\
 	 mmio.o
 
+HEADER = esc.h\
+	 chars.h\
+	 print.h\
+	 history.h\
+	 command.h\
+	 console.h\
+	 terminal.h\
+	 mmio.h
+
 $(TARGET): $(OBJECT)
 	$(CC) $(CFLAGS) $^ -o $@
 
-%.o: %.c %.h
+%.o: %.c $(HEADER)
 	$(CC) $(CFLAGS) -c $< -o $@
 
 clean:
