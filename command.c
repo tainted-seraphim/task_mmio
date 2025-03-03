@@ -36,12 +36,16 @@ void command_string_to_command(const char *str, struct command *cmd)
 	char *token = NULL;
 	size_t count = 0;
 	size_t len = 0;
-	command_free(cmd);
 	if (cmd == NULL || str == NULL || *str == '\0') {
 		return;
 	}
+	command_free(cmd);
 	len = strlen(str);
 	temp_str = (char *)malloc(len + 1);
+	if (temp_str == NULL) {
+		printf("command_string_to_command temp_str malloc failed\r\n");
+		exit(1);
+	}
 	memmove(temp_str, str, len + 1);
 	token = strtok(temp_str, " ");
 	if (token == NULL) {
@@ -50,11 +54,19 @@ void command_string_to_command(const char *str, struct command *cmd)
 	}
 	len = strlen(token);
 	cmd->command = (char *)malloc(len + 1);
+	if (cmd->command == NULL) {
+		printf("command_string_to_command cmd->command malloc failed\r\n");
+		exit(1);
+	}
 	memmove(cmd->command, token, len + 1);
 	while ((token = strtok(NULL, " ")) != NULL) {
 		len = strlen(token);
 		cmd->arguments = (char **)
 		                 realloc(cmd->arguments, sizeof(char *) * (count + 1));
+		if (cmd->arguments == NULL) {
+			printf("command_string_to_command cmd->arguments realloc failed\r\n");
+			exit(1);
+		}
 		cmd->arguments[count] = (char *)malloc(len + 1);
 		memmove(cmd->arguments[count], token, len + 1);
 		count++;

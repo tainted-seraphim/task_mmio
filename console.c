@@ -393,9 +393,17 @@ void console_init(struct console *con)
 	con->current_position = 0;
 	con->current_length = 0;
 	con->input_history = (struct history *)malloc(sizeof(struct history));
+	if (con->input_history == NULL) {
+		printf("console_init con->input_history malloc failed\r\n");
+		exit(1);
+	}
 	history_init(con->input_history);
 	con->current_command = (struct command *)
 	                       malloc(sizeof(struct command));
+	if (con->current_command == NULL) {
+		printf("console_init con->current_command malloc failed\r\n");
+		exit(1);
+	}
 	command_init(con->current_command);
 }
 

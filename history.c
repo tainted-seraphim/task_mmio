@@ -13,6 +13,10 @@ void history_add(struct history *hist, const char *input)
 		return;
 	}
 	new_node = (struct history_node *)malloc(sizeof(struct history_node));
+	if (new_node == NULL) {
+		printf("history_add new_node malloc failed\r\n");
+		exit(1);
+	}
 	history_node_init(new_node);
 	history_node_set_input(new_node, input);
 	if (hist->node_count == 0) {
@@ -73,8 +77,16 @@ void history_init(struct history *hist)
 	}
 	hist->head_node = (struct history_node *)
 	                  malloc(sizeof(struct history_node));
+	if (hist->head_node == NULL) {
+		printf("history_init head_node malloc failed\r\n");
+		exit(1);
+	}
 	hist->tail_node = (struct history_node *)
 	                  malloc(sizeof(struct history_node));
+	if (hist->tail_node == NULL) {
+		printf("history_init tail_node malloc failed\r\n");
+		exit(1);
+	}
 	history_node_init(hist->tail_node);
 	history_node_init(hist->head_node);
 	hist->tail_node->next_node = hist->head_node;
@@ -116,6 +128,10 @@ void history_node_set_input(struct history_node *node, const char *input)
 		free(node->input);
 	}
 	node->input = (char *)malloc(len + 1);
+	if (node->input == NULL) {
+		printf("history_node_set_input node->input malloc failed\r\n");
+		exit(1);
+	}
 	memmove(node->input, input, len);
 	node->input[len] = '\0';
 }
