@@ -74,3 +74,8 @@ void print_screen_clear(void)
 	printf(TASK_MMIO_ESC_SCREEN_CLEAR);
 }
 
+void print_set_cursor_position(size_t pos)
+{
+	printf("\033[%zuG", pos);
+}
+
