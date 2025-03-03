@@ -9,6 +9,11 @@ OBJECT = chars.o\
 	 terminal.o\
 	 mmio.o
 
+release: CFLAGS = -std=c99 -pedantic -Wall -Wextra
+release: $(TARGET)
+
+debug: $(TARGET)
+
 $(TARGET): main.c $(OBJECT)
 	$(CC) $(CFLAGS) $^ -o $@
 
