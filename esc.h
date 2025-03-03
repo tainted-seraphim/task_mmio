@@ -13,5 +13,18 @@
 #define TASK_MMIO_ESC_CURSOR_LEFT        "\033[D"
 #define TASK_MMIO_ESC_CURSOR_HOME        "\033[H"
 
+#define TASK_MMIO_ESC_MAX_LENGTH         64
+
+enum esc_sequence {
+	ESC_KEY,
+	ESC_ARROW_UP,
+	ESC_ARROW_DOWN,
+	ESC_ARROW_RIGHT,
+	ESC_ARROW_LEFT,
+	ESC_UNSUPPORTED
+};
+
+enum esc_sequence esc_get_esc_sequence(void);
+
 #endif
 
