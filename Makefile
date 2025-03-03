@@ -18,7 +18,7 @@ debug: $(TARGET)
 $(TARGET): main.c $(OBJECT)
 	$(CC) $(CFLAGS) $^ -o $@
 
-%.o: %.c $(HEADER)
+%.o: %.c
 	$(CC) $(CFLAGS) -c $< -o $@
 
 clean:
