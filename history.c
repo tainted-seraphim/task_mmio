@@ -133,7 +133,7 @@ void history_node_set_input(struct history_node *node, const char *input)
 		exit(1);
 	}
 	memmove(node->input, input, len);
-	node->input[len] = '\0';
+	node->input[len] = 0;
 }
 
 void history_print(const struct history *hist)

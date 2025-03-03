@@ -36,7 +36,7 @@ void command_string_to_command(const char *str, struct command *cmd)
 	char *token = NULL;
 	size_t count = 0;
 	size_t len = 0;
-	if (cmd == NULL || str == NULL || *str == '\0') {
+	if (cmd == NULL || str == NULL || *str == 0) {
 		return;
 	}
 	command_free(cmd);

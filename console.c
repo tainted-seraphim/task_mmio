@@ -39,7 +39,7 @@ void console_do_action_for_char(struct console *con, char ch)
 		con->current_length++;
 		break;
 	case CHAR_NEWLINE:
-		con->input_buffer[CONSOLE_MAX_INPUT_SIZE - 1] = '\0';
+		con->input_buffer[CONSOLE_MAX_INPUT_SIZE - 1] = 0;
 		command_string_to_command(con->input_buffer,
 		                          con->current_command);
 		print_newline();
@@ -48,7 +48,7 @@ void console_do_action_for_char(struct console *con, char ch)
 			current_node = con->input_history->head_node;
 			console_execute_command(con);
 		}
-		memset(con->input_buffer, '\0', CONSOLE_MAX_INPUT_SIZE);
+		memset(con->input_buffer, 0, CONSOLE_MAX_INPUT_SIZE);
 		memmove(input_buffer, con->input_buffer, strlen(con->input_buffer) + 1);
 		con->current_length = 0;
 		con->current_position = 0;
@@ -63,7 +63,7 @@ void console_do_action_for_char(struct console *con, char ch)
 			con->input_buffer[index] =
 			        con->input_buffer[index + 1];
 		}
-		con->input_buffer[CONSOLE_MAX_INPUT_SIZE - 1] = '\0';
+		con->input_buffer[CONSOLE_MAX_INPUT_SIZE - 1] = 0;
 		con->current_position--;
 		con->current_length--;
 		break;
@@ -117,8 +117,8 @@ void console_do_action_for_char(struct console *con, char ch)
 		printf("\r\nInput interrupted\r\n");
 		print_line_reset();
 		print_input_prompt();
-		memset(con->input_buffer, '\0', CONSOLE_MAX_INPUT_SIZE);
-		memset(input_buffer, '\0', CONSOLE_MAX_INPUT_SIZE);
+		memset(con->input_buffer, 0, CONSOLE_MAX_INPUT_SIZE);
+		memset(input_buffer, 0, CONSOLE_MAX_INPUT_SIZE);
 		con->current_position = 0;
 		con->current_length = 0;
 		break;
@@ -373,7 +373,7 @@ void console_free(struct console *con)
 	if (con == NULL) {
 		return;
 	}
-	memset(con->input_buffer, '\0', CONSOLE_MAX_INPUT_SIZE);
+	memset(con->input_buffer, 0, CONSOLE_MAX_INPUT_SIZE);
 	con->current_position = 0;
 	con->current_length = 0;
 	history_free(con->input_history);
@@ -389,7 +389,7 @@ void console_init(struct console *con)
 	if (con == NULL) {
 		return;
 	}
-	memset(con->input_buffer, '\0', CONSOLE_MAX_INPUT_SIZE);
+	memset(con->input_buffer, 0, CONSOLE_MAX_INPUT_SIZE);
 	con->current_position = 0;
 	con->current_length = 0;
 	con->input_history = (struct history *)malloc(sizeof(struct history));
