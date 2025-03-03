@@ -205,7 +205,7 @@ int mmio_mmrd(uintptr_t mem, uint32_t *output)
 		return -1;
 	}
 	if (mem % sizeof(uint32_t) != 0) {
-		printf("Memory address '0x%" PRIXPTR "' is not aligned by %zu\r\n", port, sizeof(uint32_t));
+		printf("Memory address '0x%" PRIXPTR "' is not aligned by %zu\r\n", mem, sizeof(uint32_t));
 		return -1;
 	}
 	page_size = (size_t)sysconf(_SC_PAGESIZE);
@@ -243,7 +243,7 @@ int mmio_mmrw(uintptr_t mem, uint16_t *output)
 		return -1;
 	}
 	if (mem % sizeof(uint16_t) != 0) {
-		printf("Memory address '0x%" PRIXPTR "' is not aligned by %zu\r\n", port, sizeof(uint16_t));
+		printf("Memory address '0x%" PRIXPTR "' is not aligned by %zu\r\n", mem, sizeof(uint16_t));
 		return -1;
 	}
 	page_size = (size_t)sysconf(_SC_PAGESIZE);
@@ -305,7 +305,7 @@ int mmio_mmwd(uintptr_t mem, uint32_t value)
 	size_t shift = 0;
 	int mem_fd = -1;
 	if (mem % sizeof(uint32_t) != 0) {
-		printf("Memory address '0x%" PRIXPTR "' is not aligned by %zu\r\n", port, sizeof(uint32_t));
+		printf("Memory address '0x%" PRIXPTR "' is not aligned by %zu\r\n", mem, sizeof(uint32_t));
 		return -1;
 	}
 	page_size = (size_t)sysconf(_SC_PAGESIZE);
@@ -337,7 +337,7 @@ int mmio_mmww(uintptr_t mem, uint16_t value)
 	size_t shift = 0;
 	int mem_fd = -1;
 	if (mem % sizeof(uint16_t) != 0) {
-		printf("Memory address '0x%" PRIXPTR "' is not aligned by %zu\r\n", port, sizeof(uint16_t));
+		printf("Memory address '0x%" PRIXPTR "' is not aligned by %zu\r\n", mem, sizeof(uint16_t));
 		return -1;
 	}
 	page_size = (size_t)sysconf(_SC_PAGESIZE);
