@@ -7,7 +7,8 @@ OBJECT = chars.o\
 	 command.o\
 	 console.o\
 	 terminal.o\
-	 mmio.o
+	 mmio.o\
+	 esc.o
 
 release: CFLAGS = -std=c99 -pedantic -Wall -Wextra
 release: $(TARGET)
@@ -31,4 +32,5 @@ command.c: command.h
 console.c: console.h command.h history.h chars.h print.h mmio.h
 terminal.c: terminal.h esc.h
 mmio.c: mmio.h
+esc.c: esc.h
 
