@@ -1,8 +1,7 @@
 CC = gcc
 CFLAGS = -std=c99 -pedantic -g -Wall -Wextra
 TARGET = mmio_io
-OBJECT = main.o\
-	 chars.o\
+OBJECT = chars.o\
 	 print.o\
 	 history.o\
 	 command.o\
@@ -10,16 +9,7 @@ OBJECT = main.o\
 	 terminal.o\
 	 mmio.o
 
-HEADER = esc.h\
-	 chars.h\
-	 print.h\
-	 history.h\
-	 command.h\
-	 console.h\
-	 terminal.h\
-	 mmio.h
-
-$(TARGET): $(OBJECT)
+$(TARGET): main.c $(OBJECT)
 	$(CC) $(CFLAGS) $^ -o $@
 
 %.o: %.c $(HEADER)
@@ -28,4 +18,12 @@ $(TARGET): $(OBJECT)
 clean:
 	rm -rf $(TARGET)
 	rm -rf $(OBJECT)
+
+chars.c: chars.h esc.h
+print.c: print.h esc.h
+history.c: history.h
+command.c: command.h
+console.c: console.h command.h history.h chars.h print.h mmio.h
+terminal.c: terminal.h esc.h
+mmio.c: mmio.h
 
