@@ -68,6 +68,10 @@ void command_string_to_command(const char *str, struct command *cmd)
 			exit(1);
 		}
 		cmd->arguments[count] = (char *)malloc(len + 1);
+		if (cmd->arguments[count] == NULL) {
+			printf("command_string_to_command cmd->arguments[%zu] malloc failed\r\n", count);
+			exit(1);
+		}
 		memmove(cmd->arguments[count], token, len + 1);
 		count++;
 	}
