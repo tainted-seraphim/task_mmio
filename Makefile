@@ -1,5 +1,5 @@
 CC = gcc
-CFLAGS = -std=c99 -pedantic -g -Wall -Wextra -O2
+CFLAGS = -std=c99 -pedantic -g -Wall -Wextra
 TARGET = mmio_io
 OBJECT = main.o\
 	 chars.o\

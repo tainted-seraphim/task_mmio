@@ -41,6 +41,10 @@ uint32_t mmio_iord(uintptr_t port)
 		printf("\r");
 		return -1;
 	}
+	if (port % sizeof(uint32_t) != 0) {
+		printf("Port '0x%" PRIXPTR "' is not aligned by %zu\r\n", port, sizeof(uint32_t));
+		return -1;
+	}
 	if (port > max_port) {
 		printf("Port '0x%" PRIXPTR "' is out of range\r\n", port);
 		printf("0x%X - 0x%X expected\r\n", TASK_MMIO_PORT_START, max_port);
@@ -59,6 +63,10 @@ uint16_t mmio_iorw(uintptr_t port)
 	if (check < 0) {
 		perror("ioperm");
 		printf("\r");
+		return -1;
+	}
+	if (port % sizeof(uint16_t) != 0) {
+		printf("Port '0x%" PRIXPTR "' is not aligned by %zu\r\n", port, sizeof(uint16_t));
 		return -1;
 	}
 	if (port > max_port) {
@@ -98,6 +106,10 @@ void mmio_iowd(uintptr_t port, uint32_t value)
 		printf("\r");
 		return;
 	}
+	if (port % sizeof(uint32_t) != 0) {
+		printf("Port '0x%" PRIXPTR "' is not aligned by %zu\r\n", port, sizeof(uint32_t));
+		return;
+	}
 	if (port > max_port) {
 		printf("Port '0x%" PRIXPTR "' is out of range\r\n", port);
 		printf("0x%X - 0x%X expected\r\n", TASK_MMIO_PORT_START, max_port);
@@ -109,11 +121,15 @@ void mmio_iowd(uintptr_t port, uint32_t value)
 void mmio_ioww(uintptr_t port, uint16_t value)
 {
 	int check = 0;
-	unsigned short max_port = TASK_MMIO_PORT_END + 1 - sizeof(uint8_t);
+	uint16_t max_port = TASK_MMIO_PORT_END + 1 - sizeof(uint8_t);
 	check = ioperm(TASK_MMIO_PORT_START, TASK_MMIO_PORT_COUNT, 1);
 	if (check < 0) {
 		perror("ioperm");
 		printf("\r");
+		return;
+	}
+	if (port % sizeof(uint16_t) != 0) {
+		printf("Port '0x%" PRIXPTR "' is not aligned by %zu\r\n", port, sizeof(uint16_t));
 		return;
 	}
 	if (port > max_port) {
