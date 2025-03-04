@@ -10,6 +10,7 @@
 #include "chars.h"
 #include "print.h"
 #include "mmio.h"
+#include "esc.h"
 
 static const struct console_command_wrapper wrappers[] = {
 	{"help", console_command_help},
@@ -31,12 +32,14 @@ static const struct console_command_wrapper wrappers[] = {
 	{NULL, NULL}
 };
 
+static struct history_node *current_node = NULL;
+static char input_buffer[CONSOLE_MAX_INPUT_SIZE] = {0};
+
 void console_do_action_for_char(struct console *con, char ch)
 {
-	static struct history_node *current_node = NULL;
-	static char input_buffer[CONSOLE_MAX_INPUT_SIZE] = {0};
 	size_t index = 0;
 	enum char_type type = 0;
+	enum esc_sequence esc = 0;
 	if (con == NULL) {
 		return;
 	}
@@ -69,7 +72,7 @@ void console_do_action_for_char(struct console *con, char ch)
 			console_execute_command(con);
 		}
 		memset(con->input_buffer, 0, CONSOLE_MAX_INPUT_SIZE);
-		memmove(input_buffer, con->input_buffer, strlen(con->input_buffer) + 1);
+		memset(input_buffer, 0, CONSOLE_MAX_INPUT_SIZE);
 		con->current_length = 0;
 		con->current_position = 0;
 		print_input_prompt();
@@ -84,57 +87,14 @@ void console_do_action_for_char(struct console *con, char ch)
 			        con->input_buffer[index + 1];
 		}
 		con->input_buffer[CONSOLE_MAX_INPUT_SIZE - 1] = 0;
+		memmove(input_buffer, con->input_buffer, CONSOLE_MAX_INPUT_SIZE);
 		con->current_position--;
 		con->current_length--;
 		break;
-		/* TODO: add logic for esc sequences
-	case CHAR_ARROW_UP:
-	if (con->input_history->node_count == 0) {
+	case CHAR_ESC:
+		esc = esc_get_esc_sequence();
+		console_do_action_for_esc(con, esc);
 		break;
-	}
-	if (current_node->prev_node == con->input_history->tail_node) {
-		break;
-	}
-	current_node = current_node->prev_node;
-	memmove(con->input_buffer, current_node->input,
-	        strlen(current_node->input) + 1);
-	con->current_length = strlen(con->input_buffer);
-	con->current_position = con->current_length;
-	break;
-	case CHAR_ARROW_DOWN:
-	if (con->input_history->node_count == 0) {
-		break;
-	}
-	if (current_node == con->input_history->head_node) {
-		break;
-	}
-	if (current_node->next_node == con->input_history->head_node) {
-		memmove(con->input_buffer, input_buffer,
-		        strlen(input_buffer) + 1);
-		current_node = current_node->next_node;
-	} else {
-		current_node = current_node->next_node;
-		memmove(con->input_buffer, current_node->input,
-		        strlen(current_node->input) + 1);
-	}
-	con->current_length = strlen(con->input_buffer);
-	con->current_position = con->current_length;
-	break;
-	case CHAR_ARROW_RIGHT:
-	if (con->current_position == con->current_length) {
-		break;
-	}
-	print_move_cursor_right();
-	con->current_position++;
-	break;
-	case CHAR_ARROW_LEFT:
-	if (con->current_position == 0) {
-		break;
-	}
-	print_move_cursor_left();
-	con->current_position--;
-	break;
-	*/
 	case CHAR_INTERRUPT:
 		printf("\r\nInput interrupted\r\n");
 		print_line_reset();
@@ -150,6 +110,64 @@ void console_do_action_for_char(struct console *con, char ch)
 	case CHAR_UNSUPPORTED:
 		break;
 	};
+}
+
+void console_do_action_for_esc(struct console *con, enum esc_sequence seq)
+{
+	switch (seq) {
+	case ESC_ARROW_UP:
+		if (con->input_history->node_count == 0) {
+			break;
+		}
+		if (current_node->prev_node == con->input_history->tail_node) {
+			break;
+		}
+		current_node = current_node->prev_node;
+		memset(con->input_buffer, 0, CONSOLE_MAX_INPUT_SIZE);
+		memmove(con->input_buffer, current_node->input,
+		        strlen(current_node->input));
+		con->current_length = strlen(con->input_buffer);
+		con->current_position = con->current_length;
+		break;
+	case ESC_ARROW_DOWN:
+		if (con->input_history->node_count == 0) {
+			break;
+		}
+		if (current_node == con->input_history->head_node) {
+			break;
+		}
+		if (current_node->next_node == con->input_history->head_node) {
+			memmove(con->input_buffer, input_buffer,
+			        CONSOLE_MAX_INPUT_SIZE);
+			current_node = current_node->next_node;
+		} else {
+			current_node = current_node->next_node;
+			memset(con->input_buffer, 0, CONSOLE_MAX_INPUT_SIZE);
+			memmove(con->input_buffer, current_node->input,
+			        strlen(current_node->input));
+		}
+		con->current_length = strlen(con->input_buffer);
+		con->current_position = con->current_length;
+		break;
+	case ESC_ARROW_RIGHT:
+		if (con->current_position == con->current_length) {
+			break;
+		}
+		print_move_cursor_right();
+		con->current_position++;
+		break;
+	case ESC_ARROW_LEFT:
+		if (con->current_position == 0) {
+			break;
+		}
+		print_move_cursor_left();
+		con->current_position--;
+		break;
+	case ESC_KEY:
+		break;
+	case ESC_UNSUPPORTED:
+		break;
+	}
 }
 
 void console_execute_command(struct console *con)
