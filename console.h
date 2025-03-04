@@ -4,6 +4,7 @@
 #include <unistd.h>
 #include "command.h"
 #include "history.h"
+#include "esc.h"
 
 enum {
 	CONSOLE_MAX_INPUT_SIZE = 80
@@ -24,6 +25,8 @@ void console_free(struct console *con);
 void console_run(struct console *con);
 
 void console_do_action_for_char(struct console *con, char ch);
+
+void console_do_action_for_esc(struct console *con, enum esc_sequence seq);
 
 void console_execute_command(struct console *con);
 
