@@ -29,7 +29,7 @@ chars.c: chars.h esc.h
 print.c: print.h esc.h
 history.c: history.h
 command.c: command.h
-console.c: console.h command.h history.h chars.h print.h mmio.h
+console.c: console.h command.h history.h chars.h print.h mmio.h esc.h
 terminal.c: terminal.h esc.h
 mmio.c: mmio.h
 esc.c: esc.h
