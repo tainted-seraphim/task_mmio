@@ -11,6 +11,26 @@
 #include "print.h"
 #include "mmio.h"
 
+static struct console_command_wrapper wrappers[] = {
+	{"help", console_command_help},
+	{"quit", console_command_quit},
+	{"clear", console_command_clear},
+	{"history", console_command_history},
+	{"iorb", console_command_iorb},
+	{"iorw", console_command_iorw},
+	{"iord", console_command_iord},
+	{"iowb", console_command_iowb},
+	{"ioww", console_command_ioww},
+	{"iowd", console_command_iowd},
+	{"mmrb", console_command_mmrb},
+	{"mmrw", console_command_mmrw},
+	{"mmrd", console_command_mmrd},
+	{"mmwb", console_command_mmwb},
+	{"mmww", console_command_mmww},
+	{"mmwd", console_command_mmwd},
+	{NULL, NULL};
+}
+
 void console_do_action_for_char(struct console *con, char ch)
 {
 	static struct history_node *current_node = NULL;
@@ -20,6 +40,7 @@ void console_do_action_for_char(struct console *con, char ch)
 	if (con == NULL) {
 		return;
 	}
+	/* TODO: fix this mess 
 	type = chars_get_char_type(ch);
 	switch (type) {
 	case CHAR_IDLE:
@@ -68,51 +89,51 @@ void console_do_action_for_char(struct console *con, char ch)
 		con->current_length--;
 		break;
 	case CHAR_ARROW_UP:
-		if (con->input_history->node_count == 0) {
-			break;
-		}
-		if (current_node->prev_node == con->input_history->tail_node) {
-			break;
-		}
-		current_node = current_node->prev_node;
+	if (con->input_history->node_count == 0) {
+		break;
+	}
+	if (current_node->prev_node == con->input_history->tail_node) {
+		break;
+	}
+	current_node = current_node->prev_node;
+	memmove(con->input_buffer, current_node->input,
+	        strlen(current_node->input) + 1);
+	con->current_length = strlen(con->input_buffer);
+	con->current_position = con->current_length;
+	break;
+	case CHAR_ARROW_DOWN:
+	if (con->input_history->node_count == 0) {
+		break;
+	}
+	if (current_node == con->input_history->head_node) {
+		break;
+	}
+	if (current_node->next_node == con->input_history->head_node) {
+		memmove(con->input_buffer, input_buffer,
+		        strlen(input_buffer) + 1);
+		current_node = current_node->next_node;
+	} else {
+		current_node = current_node->next_node;
 		memmove(con->input_buffer, current_node->input,
 		        strlen(current_node->input) + 1);
-		con->current_length = strlen(con->input_buffer);
-		con->current_position = con->current_length;
-		break;
-	case CHAR_ARROW_DOWN:
-		if (con->input_history->node_count == 0) {
-			break;
-		}
-		if (current_node == con->input_history->head_node) {
-			break;
-		}
-		if (current_node->next_node == con->input_history->head_node) {
-			memmove(con->input_buffer, input_buffer,
-			        strlen(input_buffer) + 1);
-			current_node = current_node->next_node;
-		} else {
-			current_node = current_node->next_node;
-			memmove(con->input_buffer, current_node->input,
-			        strlen(current_node->input) + 1);
-		}
-		con->current_length = strlen(con->input_buffer);
-		con->current_position = con->current_length;
-		break;
+	}
+	con->current_length = strlen(con->input_buffer);
+	con->current_position = con->current_length;
+	break;
 	case CHAR_ARROW_RIGHT:
-		if (con->current_position == con->current_length) {
-			break;
-		}
-		print_move_cursor_right();
-		con->current_position++;
+	if (con->current_position == con->current_length) {
 		break;
+	}
+	print_move_cursor_right();
+	con->current_position++;
+	break;
 	case CHAR_ARROW_LEFT:
-		if (con->current_position == 0) {
-			break;
-		}
-		print_move_cursor_left();
-		con->current_position--;
+	if (con->current_position == 0) {
 		break;
+	}
+	print_move_cursor_left();
+	con->current_position--;
+	break;
 	case CHAR_INTERRUPT:
 		printf("\r\nInput interrupted\r\n");
 		print_line_reset();
@@ -128,6 +149,7 @@ void console_do_action_for_char(struct console *con, char ch)
 	case CHAR_UNSUPPORTED:
 		break;
 	};
+	*/
 }
 
 void console_execute_command(struct console *con)
@@ -139,6 +161,7 @@ void console_execute_command(struct console *con)
 	if (con == NULL || con->current_command == NULL) {
 		return;
 	}
+	/* TODO: fix this mess
 	if (0 == strcmp(con->current_command->command, "quit")) {
 		if (con->current_command->argument_count != 0) {
 			printf("Command 'quit' does not need arguments\r\n");
@@ -364,6 +387,7 @@ void console_execute_command(struct console *con)
 		mmio_mmwd(mem, value);
 		return;
 	}
+	*/
 	printf("Invalid command '%s'\r\n", con->current_command->command);
 
 }
@@ -424,8 +448,416 @@ void console_run(struct console *con)
 		console_do_action_for_char(con, ch);
 		print_line_reset();
 		print_input_prompt();
-		printf("%s\033[%zuG", con->input_buffer, strlen(TASK_MMIO_INPUT_PROMPT) + con->current_position + 1);
+		printf("%s", con->input_buffer);
+		print_set_cursor_position(strlen(TASK_MMIO_INPUT_PROMPT) + con->current_position + 1);
 		fflush(stdout);
 	}
+}
+
+int console_command_help(struct console *con, size_t argc, char **argv)
+{
+	if (con == NULL) {
+		return -1;
+	}
+	if (argc != 0) {
+		printf("Command 'help' takes 0 arguments\r\n");
+		return -1;
+	}
+	print_help();
+	return 0;
+}
+
+int console_command_quit(struct console *con, size_t argc, char **argv)
+{
+	if (con == NULL) {
+		return -1;
+	}
+	if (argc != 0) {
+		printf("Command 'quit' takes 0 arguments\r\n");
+		return -1;
+	}
+	exit(0);
+	return 0;
+}
+
+int console_command_clear(struct console *con, size_t argc, char **argv)
+{
+	if (con == NULL) {
+		return -1;
+	}
+	if (argc != 0) {
+		printf("Command 'clear' takes 0 arguments\r\n");
+		return -1;
+	}
+	print_screen_clear();
+	return 0;
+}
+
+int console_command_history(struct console *con, size_t argc, char **argv)
+{
+	if (con == NULL) {
+		return -1;
+	}
+	if (argc != 0) {
+		printf("Command 'history' takes 0 arguments\r\n");
+		return -1;
+	}
+	history_print(con->input_history);
+	return 0;
+
+}
+
+int console_command_iorb(struct console *con, size_t argc, char **argv)
+{
+	uintptr_t port = 0;
+	int check = 0;
+	uint8_t result = 0;
+	if (con == NULL) {
+		return -1;
+	}
+	if (argc != 1) {
+		printf("Command 'iorb' takes 1 argument\r\n");
+		return -1;
+	}
+	port = strtoull(argv[0], NULL, 0);
+	if (port == ULLONG_MAX || *(argv[0]) == '-') {
+		printf("Invalid port '%s'\r\n", argv[0]);
+		return -1;
+	}
+	check = mmio_iorb(port, &result);
+	if (check != 0) {
+		printf("iorb error occured\r\n");
+		return -1;
+	} else {
+		printf("0x%" PRIX8 "\r\n", result);
+	}
+	return 0;
+}
+
+int console_command_iorw(struct console *con, size_t argc, char **argv)
+{
+	uintptr_t port = 0;
+	int check = 0;
+	uint16_t result = 0;
+	if (con == NULL) {
+		return -1;
+	}
+	if (argc != 1) {
+		printf("Command 'iorw' takes 1 argument\r\n");
+		return -1;
+	}
+	port = strtoull(argv[0], NULL, 0);
+	if (port == ULLONG_MAX || *(argv[0]) == '-') {
+		printf("Invalid port '%s'\r\n", argv[0]);
+		return -1;
+	}
+	check = mmio_iorw(port, &result);
+	if (check != 0) {
+		printf("iorw error occured\r\n");
+		return -1;
+	} else {
+		printf("0x%" PRIX16 "\r\n", result);
+	}
+	return 0;
+}
+
+int console_command_iord(struct console *con, size_t argc, char **argv)
+{
+	uintptr_t port = 0;
+	int check = 0;
+	uint32_t result = 0;
+	if (con == NULL) {
+		return -1;
+	}
+	if (argc != 1) {
+		printf("Command 'iord' takes 1 argument\r\n");
+		return -1;
+	}
+	port = strtoull(argv[0], NULL, 0);
+	if (port == ULLONG_MAX || *(argv[0]) == '-') {
+		printf("Invalid port '%s'\r\n", argv[0]);
+		return -1;
+	}
+	check = mmio_iord(port, &result);
+	if (check != 0) {
+		printf("iord error occured\r\n");
+		return -1;
+	} else {
+		printf("0x%" PRIX32 "\r\n", result);
+	}
+	return 0;
+}
+
+int console_command_iowb(struct console *con, size_t argc, char **argv)
+{
+	uintptr_t port = 0;
+	uintmax_t value = 0;
+	int check = 0;
+	if (con == NULL) {
+		return -1;
+	}
+	if (argc != 1) {
+		printf("Command 'iowb' takes 1 argument\r\n");
+		return -1;
+	}
+	port = strtoull(argv[0], NULL, 0);
+	if (port == ULLONG_MAX || *(argv[0]) == '-') {
+		printf("Invalid port '%s'\r\n", argv[0]);
+		return -1;
+	}
+	value = strtoull(argv[1], NULL, 0);
+	if (value == ULLONG_MAX || *(argv[1]) == '-') {
+		printf("Invalid value '%s'\r\n", argv[1]);
+		return -1;
+	}
+	if (value > UINT8_MAX) {
+		printf("Value '0x%" PRIXMAX "' is greater than maximum allowed %" PRIXMAX "\r\n", value, UINT8_MAX);
+		return -1;
+	}
+	check = mmio_iowb(port, (uint8_t)value);
+	if (check != 0) {
+		printf("iowb error occured\r\n");
+		return -1;
+	}
+	return 0;
+}
+
+int console_command_ioww(struct console *con, size_t argc, char **argv)
+{
+	uintptr_t port = 0;
+	uintmax_t value = 0;
+	int check = 0;
+	if (con == NULL) {
+		return -1;
+	}
+	if (argc != 1) {
+		printf("Command 'ioww' takes 1 argument\r\n");
+		return -1;
+	}
+	port = strtoull(argv[0], NULL, 0);
+	if (port == ULLONG_MAX || *(argv[0]) == '-') {
+		printf("Invalid port '%s'\r\n", argv[0]);
+		return -1;
+	}
+	value = strtoull(argv[1], NULL, 0);
+	if (value == ULLONG_MAX || *(argv[1]) == '-') {
+		printf("Invalid value '%s'\r\n", argv[1]);
+		return -1;
+	}
+	if (value > UINT16_MAX) {
+		printf("Value '0x%" PRIXMAX "' is greater than maximum allowed %" PRIXMAX "\r\n", value, UINT16_MAX);
+		return -1;
+	}
+	check = mmio_ioww(port, (uint16_t)value);
+	if (check != 0) {
+		printf("ioww error occured\r\n");
+		return -1;
+	}
+	return 0;
+}
+
+int console_command_iowd(struct console *con, size_t argc, char **argv)
+{
+	uintptr_t port = 0;
+	uintmax_t value = 0;
+	int check = 0;
+	if (con == NULL) {
+		return -1;
+	}
+	if (argc != 1) {
+		printf("Command 'iowd' takes 1 argument\r\n");
+		return -1;
+	}
+	port = strtoull(argv[0], NULL, 0);
+	if (port == ULLONG_MAX || *(argv[0]) == '-') {
+		printf("Invalid port '%s'\r\n", argv[0]);
+		return -1;
+	}
+	value = strtoull(argv[1], NULL, 0);
+	if (value == ULLONG_MAX || *(argv[1]) == '-') {
+		printf("Invalid value '%s'\r\n", argv[1]);
+		return -1;
+	}
+	if (value > UINT32_MAX) {
+		printf("Value '0x%" PRIXMAX "' is greater than maximum allowed %" PRIXMAX "\r\n", value, UINT32_MAX);
+		return -1;
+	}
+	check = mmio_iowd(port, (uint32_t)value);
+	if (check != 0) {
+		printf("iowd error occured\r\n");
+		return -1;
+	}
+	return 0;
+}
+
+int console_command_mmrb(struct console *con, size_t argc, char **argv)
+{
+	uintptr_t mem = 0;
+	int check = 0;
+	uint8_t result = 0;
+	if (con == NULL) {
+		return -1;
+	}
+	if (argc != 1) {
+		printf("Command 'mmrb' takes 1 argument\r\n");
+		return -1;
+	}
+	mem = strtoull(argv[0], NULL, 0);
+	if (mem == ULLONG_MAX || *(argv[0]) == '-') {
+		printf("Invalid memory address '%s'\r\n", argv[0]);
+		return -1;
+	}
+	check = mmio_mmrb(mem, &result);
+	if (check != 0) {
+		printf("mmrb error occured\r\n");
+		return -1;
+	} else {
+		printf("0x%" PRIX8 "\r\n", result);
+	}
+	return 0;
+}
+
+int console_command_mmrw(struct console *con, size_t argc, char **argv)
+{
+	uintptr_t mem = 0;
+	int check = 0;
+	uint16_t result = 0;
+	if (con == NULL) {
+		return -1;
+	}
+	if (argc != 1) {
+		printf("Command 'mmrw' takes 1 argument\r\n");
+		return -1;
+	}
+	mem = strtoull(argv[0], NULL, 0);
+	if (mem == ULLONG_MAX || *(argv[0]) == '-') {
+		printf("Invalid memory address '%s'\r\n", argv[0]);
+		return -1;
+	}
+	check = mmio_mmrw(mem, &result);
+	if (check != 0) {
+		printf("mmrw error occured\r\n");
+		return -1;
+	} else {
+		printf("0x%" PRIX16 "\r\n", result);
+	}
+	return 0;
+}
+
+int console_command_mmrd(struct console *con, size_t argc, char **argv)
+{
+	uintptr_t mem = 0;
+	int check = 0;
+	uint32_t result = 0;
+	if (con == NULL) {
+		return -1;
+	}
+	if (argc != 1) {
+		printf("Command 'mmrd' takes 1 argument\r\n");
+		return -1;
+	}
+	mem = strtoull(argv[0], NULL, 0);
+	if (mem == ULLONG_MAX || *(argv[0]) == '-') {
+		printf("Invalid memory address '%s'\r\n", argv[0]);
+		return -1;
+	}
+	check = mmio_mmrd(mem, &result);
+	if (check != 0) {
+		printf("mmrd error occured\r\n");
+		return -1;
+	} else {
+		printf("0x%" PRIX32 "\r\n", result);
+	}
+	return 0;
+}
+
+int console_command_mmwb(struct console *con, size_t argc, char **argv)
+{
+	uintptr_t mem = 0;
+	uintmax_t value = 0;
+	int check = 0;
+	if (con == NULL) {
+		return -1;
+	}
+	if (argc != 1) {
+		printf("Command 'mmwb' takes 1 argument\r\n");
+		return -1;
+	}
+	mem = strtoull(argv[0], NULL, 0);
+	if (mem == ULLONG_MAX || *(argv[0]) == '-') {
+		printf("Invalid memory address '%s'\r\n", argv[0]);
+		return -1;
+	}
+	value = strtoull(argv[1], NULL, 0);
+	if (value > UINT8_MAX) {
+		printf("Value '0x%" PRIXMAX "' is greater than maximum allowed %" PRIXMAX "\r\n", value, UINT8_MAX);
+		return -1;
+	}
+	check = mmio_mmwb(mem, (uint8_t)value);
+	if (check != 0) {
+		printf("mmwb error occured\r\n");
+		return -1;
+	}
+	return 0;
+}
+
+int console_command_mmww(struct console *con, size_t argc, char **argv)
+{
+	uintptr_t mem = 0;
+	uintmax_t value = 0;
+	int check = 0;
+	if (con == NULL) {
+		return -1;
+	}
+	if (argc != 1) {
+		printf("Command 'mmww' takes 1 argument\r\n");
+		return -1;
+	}
+	mem = strtoull(argv[0], NULL, 0);
+	if (mem == ULLONG_MAX || *(argv[0]) == '-') {
+		printf("Invalid memory address '%s'\r\n", argv[0]);
+		return -1;
+	}
+	value = strtoull(argv[1], NULL, 0);
+	if (value > UINT16_MAX) {
+		printf("Value '0x%" PRIXMAX "' is greater than maximum allowed %" PRIXMAX "\r\n", value, UINT16_MAX);
+		return -1;
+	}
+	check = mmio_mmww(mem, (uint16_t)value);
+	if (check != 0) {
+		printf("mmww error occured\r\n");
+		return -1;
+	}
+	return 0;
+}
+
+int console_command_mmwd(struct console *con, size_t argc, char **argv)
+{
+	uintptr_t mem = 0;
+	uintmax_t value = 0;
+	int check = 0;
+	if (con == NULL) {
+		return -1;
+	}
+	if (argc != 1) {
+		printf("Command 'mmwd' takes 1 argument\r\n");
+		return -1;
+	}
+	mem = strtoull(argv[0], NULL, 0);
+	if (mem == ULLONG_MAX || *(argv[0]) == '-') {
+		printf("Invalid memory address '%s'\r\n", argv[0]);
+		return -1;
+	}
+	value = strtoull(argv[1], NULL, 0);
+	if (value > UINT32_MAX) {
+		printf("Value '0x%" PRIXMAX "' is greater than maximum allowed %" PRIXMAX "\r\n", value, UINT32_MAX);
+		return -1;
+	}
+	check = mmio_mmwd(mem, (uint32_t)value);
+	if (check != 0) {
+		printf("mmwd error occured\r\n");
+		return -1;
+	}
+	return 0;
 }
 
