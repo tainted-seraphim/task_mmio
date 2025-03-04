@@ -233,11 +233,17 @@ void console_run(struct console *con)
 
 int console_command_help(struct console *con, size_t argc, char **argv)
 {
+	size_t index = 0;
 	if (con == NULL) {
 		return -1;
 	}
 	if (argc != 0) {
 		printf("Command 'help' takes 0 arguments\r\n");
+		printf("Unwanted arguments:");
+		for (index = 0; index < argc; index++) {
+			printf(" '%s'", argv[index]);
+		}
+		printf("\r\n");
 		return -1;
 	}
 	print_help();
@@ -246,11 +252,17 @@ int console_command_help(struct console *con, size_t argc, char **argv)
 
 int console_command_quit(struct console *con, size_t argc, char **argv)
 {
+	size_t index = 0;
 	if (con == NULL) {
 		return -1;
 	}
 	if (argc != 0) {
 		printf("Command 'quit' takes 0 arguments\r\n");
+		printf("Unwanted arguments:");
+		for (index = 0; index < argc; index++) {
+			printf(" '%s'", argv[index]);
+		}
+		printf("\r\n");
 		return -1;
 	}
 	exit(0);
@@ -259,11 +271,17 @@ int console_command_quit(struct console *con, size_t argc, char **argv)
 
 int console_command_clear(struct console *con, size_t argc, char **argv)
 {
+	size_t index = 0;
 	if (con == NULL) {
 		return -1;
 	}
 	if (argc != 0) {
 		printf("Command 'clear' takes 0 arguments\r\n");
+		printf("Unwanted arguments:");
+		for (index = 0; index < argc; index++) {
+			printf(" '%s'", argv[index]);
+		}
+		printf("\r\n");
 		return -1;
 	}
 	print_screen_clear();
@@ -272,11 +290,17 @@ int console_command_clear(struct console *con, size_t argc, char **argv)
 
 int console_command_history(struct console *con, size_t argc, char **argv)
 {
+	size_t index = 0;
 	if (con == NULL) {
 		return -1;
 	}
 	if (argc != 0) {
 		printf("Command 'history' takes 0 arguments\r\n");
+		printf("Unwanted arguments:");
+		for (index = 0; index < argc; index++) {
+			printf(" '%s'", argv[index]);
+		}
+		printf("\r\n");
 		return -1;
 	}
 	history_print(con->input_history);
