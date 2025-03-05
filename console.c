@@ -348,7 +348,7 @@ int console_command_iorb(struct console *con, size_t argc, char **argv)
 		printf("iorb error occured\r\n");
 		return -1;
 	} else {
-		printf("0x%" PRIX8 "\r\n", result);
+		printf("0x%02X\r\n", result);
 	}
 	return 0;
 }
@@ -375,7 +375,7 @@ int console_command_iorw(struct console *con, size_t argc, char **argv)
 		printf("iorw error occured\r\n");
 		return -1;
 	} else {
-		printf("0x%" PRIX16 "\r\n", result);
+		printf("0x%04X\r\n", result);
 	}
 	return 0;
 }
@@ -402,7 +402,7 @@ int console_command_iord(struct console *con, size_t argc, char **argv)
 		printf("iord error occured\r\n");
 		return -1;
 	} else {
-		printf("0x%" PRIX32 "\r\n", result);
+		printf("0x%08X\r\n", result);
 	}
 	return 0;
 }
@@ -531,7 +531,7 @@ int console_command_mmrb(struct console *con, size_t argc, char **argv)
 		printf("mmrb error occured\r\n");
 		return -1;
 	} else {
-		printf("0x%" PRIX8 "\r\n", result);
+		printf("0x%02X\r\n", result);
 	}
 	return 0;
 }
@@ -558,7 +558,7 @@ int console_command_mmrw(struct console *con, size_t argc, char **argv)
 		printf("mmrw error occured\r\n");
 		return -1;
 	} else {
-		printf("0x%" PRIX16 "\r\n", result);
+		printf("0x%04X\r\n", result);
 	}
 	return 0;
 }
@@ -585,7 +585,7 @@ int console_command_mmrd(struct console *con, size_t argc, char **argv)
 		printf("mmrd error occured\r\n");
 		return -1;
 	} else {
-		printf("0x%" PRIX32 "\r\n", result);
+		printf("0x%08X\r\n", result);
 	}
 	return 0;
 }
