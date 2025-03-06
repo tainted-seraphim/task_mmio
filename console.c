@@ -163,6 +163,14 @@ void console_do_action_for_esc(struct console *con, enum esc_sequence seq)
 		print_move_cursor_left();
 		con->current_position--;
 		break;
+	case ESC_HOME:
+		con->current_position = 0;
+		print_set_cursor_position(con->current_position);
+		break;
+	case ESC_END:
+		con->current_position = con->current_length;
+		print_set_cursor_position(con->current_length);
+		break;
 	case ESC_KEY:
 		break;
 	case ESC_UNSUPPORTED:
