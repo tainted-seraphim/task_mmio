@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <string.h>
 #include "esc.h"
 #include "print.h"
 
@@ -77,6 +78,6 @@ void print_screen_clear(void)
 
 void print_set_cursor_position(size_t pos)
 {
-	printf("\033[%zuG", pos);
+	printf("\033[%zuG", strlen(TASK_MMIO_INPUT_PROMPT) + pos);
 }
 
