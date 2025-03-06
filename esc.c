@@ -23,6 +23,12 @@ enum esc_sequence esc_get_esc_sequence(void)
 	if (0 == strcmp(buffer, TASK_MMIO_ESC_CURSOR_LEFT)) {
 		return ESC_ARROW_LEFT;
 	}
+	if (0 == strcmp(buffer, TASK_MMIO_ESC_CURSOR_HOME)) {
+		return ESC_HOME;
+	}
+	if (0 == strcmp(buffer, TASK_MMIO_ESC_CURSOR_END)) {
+		return ESC_END;
+	}
 	return ESC_UNSUPPORTED;
 }
 
