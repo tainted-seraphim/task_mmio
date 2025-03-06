@@ -244,7 +244,7 @@ void console_run(struct console *con)
 		print_line_reset();
 		print_input_prompt();
 		printf("%s", con->input_buffer);
-		print_set_cursor_position(strlen(TASK_MMIO_INPUT_PROMPT) + con->current_position + 1);
+		print_set_cursor_position(con->current_position + 1);
 		fflush(stdout);
 	}
 }
