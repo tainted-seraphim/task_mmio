@@ -72,6 +72,7 @@ void print_newline(void)
 void print_screen_clear(void)
 {
 	printf(TASK_MMIO_ESC_SCREEN_CLEAR);
+	printf(TASK_MMIO_ESC_SCREEN_TOP);
 }
 
 void print_set_cursor_position(size_t pos)
