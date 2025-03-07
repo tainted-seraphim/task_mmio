@@ -9,9 +9,11 @@ void history_add(struct history *hist, const char *input)
 {
 	struct history_node *new_node = NULL;
 	struct history_node *temp = NULL;
+
 	if (hist == NULL || input == NULL) {
 		return;
 	}
+
 	new_node = (struct history_node *)malloc(sizeof(struct history_node));
 	if (new_node == NULL) {
 		printf("history_add new_node malloc failed\r\n");
@@ -52,13 +54,16 @@ void history_free(struct history *hist)
 {
 	struct history_node *curr_node = NULL;
 	struct history_node *next_node = NULL;
+
 	if (hist == NULL) {
 		return;
 	}
+
 	curr_node = hist->tail_node;
 	if (curr_node == NULL) {
 		return;
 	}
+
 	while (curr_node != NULL) {
 		next_node = curr_node->next_node;
 		history_node_free(curr_node);
@@ -75,6 +80,7 @@ void history_init(struct history *hist)
 	if (hist == NULL) {
 		return;
 	}
+
 	hist->head_node = (struct history_node *)
 	                  malloc(sizeof(struct history_node));
 	if (hist->head_node == NULL) {
