@@ -4,7 +4,7 @@
 
 enum esc_sequence esc_get_esc_sequence(void)
 {
-	int check = 0;
+	size_t check = 0;
 	char buffer[TASK_MMIO_ESC_MAX_LENGTH] = {27};
 	/* This enables smooth arrow movement and history scrolling */
 	check = read(1, buffer + 1, TASK_MMIO_ESC_MAX_LENGTH - 1);

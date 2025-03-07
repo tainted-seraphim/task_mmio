@@ -15,7 +15,7 @@
 #define TASK_MMIO_ESC_CURSOR_HOME        "\033[H"
 #define TASK_MMIO_ESC_CURSOR_END         "\033[F"
 
-#define TASK_MMIO_ESC_MAX_LENGTH         64
+#define TASK_MMIO_ESC_MAX_LENGTH         64ULL
 
 enum esc_sequence {
 	ESC_KEY,
