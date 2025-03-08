@@ -22,5 +22,9 @@ void print_newline(void);
 
 void print_screen_clear(void);
 
+void print_enable_alt_screen(void);
+
+void print_disable_alt_screen(void);
+
 #endif
 

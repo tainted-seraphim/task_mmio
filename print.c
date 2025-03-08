@@ -81,3 +81,16 @@ void print_set_cursor_position(size_t pos)
 	printf("\033[%zuG", strlen(TASK_MMIO_INPUT_PROMPT) + pos);
 }
 
+void print_enable_alt_screen(void)
+{
+	printf(TASK_MMIO_ESC_SCREEN_SAVE);
+	printf(TASK_MMIO_ESC_SCREEN_ENABLE_ALT);
+}
+
+void print_disable_alt_screen(void)
+{
+	printf(TASK_MMIO_ESC_SCREEN_CLEAR);
+	printf(TASK_MMIO_ESC_SCREEN_DISABLE_ALT);
+	printf(TASK_MMIO_ESC_SCREEN_RESTORE);
+}
+
