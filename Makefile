@@ -8,7 +8,8 @@ OBJECT = chars.o\
 	 console.o\
 	 terminal.o\
 	 mmio.o\
-	 esc.o
+	 esc.o\
+	 input.o
 
 release: CFLAGS = -std=c99 -pedantic -Wall -Wextra
 release: $(TARGET)
@@ -18,7 +19,7 @@ debug: $(TARGET)
 $(TARGET): main.c $(OBJECT)
 	$(CC) $(CFLAGS) $^ -o $@
 
-%.o: %.c
+%.o: %.c %.h
 	$(CC) $(CFLAGS) -c $< -o $@
 
 clean:
@@ -33,4 +34,5 @@ console.c: console.h command.h history.h chars.h print.h mmio.h esc.h
 terminal.c: terminal.h esc.h
 mmio.c: mmio.h
 esc.c: esc.h
+input.c: input.h
 
