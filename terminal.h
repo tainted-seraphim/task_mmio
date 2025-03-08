@@ -3,11 +3,13 @@
 
 #include <termios.h>
 
-void terminal_init(void);
+void terminal_init(struct termios *terminal);
+
+void terminal_free(struct termios *terminal);
 
 void terminal_enable_raw_terminal(struct termios *terminal);
 
-void terminal_reset(void);
+void terminal_reset_terminal(struct termios *terminal);
 
 #endif
 

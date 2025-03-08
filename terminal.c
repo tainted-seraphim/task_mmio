@@ -1,24 +1,37 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include <termios.h>
 
 #include "esc.h"
 #include "terminal.h"
 
-static struct termios original_terminal;
-static struct termios raw_terminal;
+struct termios *base_terminal = NULL;
 
-void terminal_init(void)
+void terminal_init(struct termios *terminal)
 {
-	tcgetattr(0, &original_terminal);
-	raw_terminal = original_terminal;
-	terminal_enable_raw_terminal(&raw_terminal);
-	tcsetattr(0, TCSAFLUSH, &raw_terminal);
-	atexit(terminal_reset);
-	printf(TASK_MMIO_ESC_SCREEN_SAVE);
-	printf(TASK_MMIO_ESC_SCREEN_ENABLE_ALT);
-	printf(TASK_MMIO_ESC_CURSOR_HOME);
-	fflush(stdout);
+	if (terminal == NULL) {
+		return;
+	}
+
+	if (base_terminal == NULL) {
+		base_terminal = (struct termios *)malloc(sizeof(struct termios));
+		if (base == NULL) {
+			printf("terminal_init base_terminal malloc failed\r\n");
+			exit(1);
+		}
+		tcgetattr(0, base_terminal);
+	}
+	memmove(terminal, base_terminal, sizeof(struct termios));
+}
+
+void terminal_free(struct termios *terminal)
+{
+	if (terminal == NULL) {
+		return;
+	}
+
+	memset(terminal, 0, sizeof(struct termios));
 }
 
 void terminal_enable_raw_terminal(struct termios *terminal)
@@ -26,6 +39,7 @@ void terminal_enable_raw_terminal(struct termios *terminal)
 	if (terminal == NULL) {
 		return;
 	}
+
 	tcgetattr(0, terminal);
 	terminal->c_iflag &= ~(IGNBRK | BRKINT | PARMRK | ISTRIP | INLCR | IGNCR | ICRNL | IXON);
 	terminal->c_oflag &= ~(OPOST);
@@ -36,12 +50,12 @@ void terminal_enable_raw_terminal(struct termios *terminal)
 	terminal->c_cc[VTIME] = 1;
 }
 
-void terminal_reset(void)
+void terminal_reset_terminal(struct termios *terminal)
 {
-	tcsetattr(0, TCSAFLUSH, &original_terminal);
-	raw_terminal = original_terminal;
-	printf(TASK_MMIO_ESC_SCREEN_DISABLE_ALT);
-	printf(TASK_MMIO_ESC_SCREEN_RESTORE);
-	fflush(stdout);
+	if (terminal == NULL) {
+		return;
+	}
+
+	memmove(terminal, base_terminal, sizeof(struct termios));
 }
 
