@@ -1,3 +1,5 @@
+/* Date: 09.03.2025 */
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -5,14 +7,38 @@
 #include <inttypes.h>
 #include <limits.h>
 #include "console.h"
+#include "input.h"
 #include "command.h"
 #include "history.h"
 #include "chars.h"
 #include "print.h"
 #include "mmio.h"
 #include "esc.h"
+#include "terminal.h"
 
-static const struct console_command_wrapper wrappers[] = {
+static const struct console_char_wrapper char_wrappers[] = {
+	{CHAR_IDLE, console_char_idle},
+	{CHAR_PRINTABLE, console_char_printable},
+	{CHAR_NEWLINE, console_char_newline},
+	{CHAR_BACKSPACE, console_char_backspace},
+	{CHAR_ESC, console_char_esc},
+	{CHAR_INTERRUPT, console_char_interrupt},
+	{CHAR_QUIT, console_char_quit},
+	{CHAR_UNSUPPORTED, console_char_unsupported}
+};
+
+static const struct console_esc_wrapper esc_wrappers[] = {
+	{ESC_KEY, console_esc_esc_key},
+	{ESC_ARROW_UP, console_esc_arrow_up},
+	{ESC_ARROW_DOWN, console_esc_arrow_down},
+	{ESC_ARROW_RIGHT, console_esc_arrow_right},
+	{ESC_ARROW_LEFT, console_esc_arrow_left},
+	{ESC_HOME, console_esc_home},
+	{ESC_END, console_esc_end},
+	{ESC_UNSUPPORTED, console_esc_unsupported},
+};
+
+static const struct console_command_wrapper command_wrappers[] = {
 	{"help", console_command_help},
 	{"quit", console_command_quit},
 	{"clear", console_command_clear},
@@ -32,149 +58,39 @@ static const struct console_command_wrapper wrappers[] = {
 	{NULL, NULL}
 };
 
-static struct history_node *current_node = NULL;
-static char input_buffer[CONSOLE_MAX_INPUT_SIZE] = {0};
-
 void console_do_action_for_char(struct console *con, char ch)
 {
 	size_t index = 0;
 	enum char_type type = 0;
-	enum esc_sequence esc = 0;
+
 	if (con == NULL) {
 		return;
 	}
+
 	type = chars_get_char_type(ch);
-	switch (type) {
-	case CHAR_IDLE:
-		break;
-	case CHAR_PRINTABLE:
-		if (con->current_position == CONSOLE_MAX_INPUT_SIZE - 1) {
-			break;
+	while (char_wrappers[index].type != CHAR_UNSUPPORTED) {
+		if (char_wrappers[index].type == type) {
+			char_wrappers[index].handler(con, ch);
+			return;
 		}
-		for (index = CONSOLE_MAX_INPUT_SIZE - 1;
-		                index > con->current_position; index--) {
-			con->input_buffer[index] =
-			        con->input_buffer[index - 1];
-		}
-		con->input_buffer[con->current_position] = ch;
-		memmove(input_buffer, con->input_buffer, CONSOLE_MAX_INPUT_SIZE);
-		con->current_position++;
-		con->current_length++;
-		break;
-	case CHAR_NEWLINE:
-		con->input_buffer[CONSOLE_MAX_INPUT_SIZE - 1] = 0;
-		command_string_to_command(con->input_buffer,
-		                          con->current_command);
-		print_newline();
-		if (con->current_command->command != NULL) {
-			history_add(con->input_history, con->input_buffer);
-			current_node = con->input_history->head_node;
-			console_execute_command(con);
-		}
-		memset(con->input_buffer, 0, CONSOLE_MAX_INPUT_SIZE);
-		memset(input_buffer, 0, CONSOLE_MAX_INPUT_SIZE);
-		con->current_length = 0;
-		con->current_position = 0;
-		print_input_prompt();
-		break;
-	case CHAR_BACKSPACE:
-		if (con->current_position == 0) {
-			break;
-		}
-		for (index = con->current_position - 1;
-		                index < CONSOLE_MAX_INPUT_SIZE - 1; index++) {
-			con->input_buffer[index] =
-			        con->input_buffer[index + 1];
-		}
-		con->input_buffer[CONSOLE_MAX_INPUT_SIZE - 1] = 0;
-		memmove(input_buffer, con->input_buffer, CONSOLE_MAX_INPUT_SIZE);
-		con->current_position--;
-		con->current_length--;
-		break;
-	case CHAR_ESC:
-		esc = esc_get_esc_sequence();
-		console_do_action_for_esc(con, esc);
-		break;
-	case CHAR_INTERRUPT:
-		printf("\r\nInput interrupted\r\n");
-		print_line_reset();
-		print_input_prompt();
-		memset(con->input_buffer, 0, CONSOLE_MAX_INPUT_SIZE);
-		memset(input_buffer, 0, CONSOLE_MAX_INPUT_SIZE);
-		con->current_position = 0;
-		con->current_length = 0;
-		break;
-	case CHAR_QUIT:
-		exit(0);
-		break;
-	case CHAR_UNSUPPORTED:
-		break;
-	};
+		index++;
+	}
 }
 
 void console_do_action_for_esc(struct console *con, enum esc_sequence seq)
 {
-	switch (seq) {
-	case ESC_ARROW_UP:
-		if (con->input_history->node_count == 0) {
-			break;
+	size_t index = 0;
+
+	if (con == NULL) {
+		return;
+	}
+
+	while (esc_wrappers[index].seq != ESC_UNSUPPORTED) {
+		if (esc_wrappers[index].seq == seq) {
+			esc_wrappers[index].handler(con);
+			return;
 		}
-		if (current_node->prev_node == con->input_history->tail_node) {
-			break;
-		}
-		current_node = current_node->prev_node;
-		memset(con->input_buffer, 0, CONSOLE_MAX_INPUT_SIZE);
-		memmove(con->input_buffer, current_node->input,
-		        strlen(current_node->input));
-		con->current_length = strlen(con->input_buffer);
-		con->current_position = con->current_length;
-		break;
-	case ESC_ARROW_DOWN:
-		if (con->input_history->node_count == 0) {
-			break;
-		}
-		if (current_node == con->input_history->head_node) {
-			break;
-		}
-		if (current_node->next_node == con->input_history->head_node) {
-			memmove(con->input_buffer, input_buffer,
-			        CONSOLE_MAX_INPUT_SIZE);
-			current_node = current_node->next_node;
-		} else {
-			current_node = current_node->next_node;
-			memset(con->input_buffer, 0, CONSOLE_MAX_INPUT_SIZE);
-			memmove(con->input_buffer, current_node->input,
-			        strlen(current_node->input));
-		}
-		con->current_length = strlen(con->input_buffer);
-		con->current_position = con->current_length;
-		break;
-	case ESC_ARROW_RIGHT:
-		if (con->current_position == con->current_length) {
-			break;
-		}
-		print_move_cursor_right();
-		con->current_position++;
-		break;
-	case ESC_ARROW_LEFT:
-		if (con->current_position == 0) {
-			break;
-		}
-		print_move_cursor_left();
-		con->current_position--;
-		break;
-	case ESC_HOME:
-		con->current_position = 0;
-		print_set_cursor_position(con->current_position);
-		break;
-	case ESC_END:
-		con->current_position = con->current_length;
-		print_set_cursor_position(con->current_length);
-		break;
-	case ESC_KEY:
-		break;
-	case ESC_UNSUPPORTED:
-		break;
+		index++;
 	}
 }
 
@@ -184,9 +100,9 @@ void console_execute_command(struct console *con)
 	if (con == NULL || con->current_command == NULL) {
 		return;
 	}
-	while (wrappers[index].command != NULL) {
-		if (0 == strcmp(wrappers[index].command, con->current_command->command)) {
-			wrappers[index].handler(con, con->current_command->argument_count, con->current_command->arguments);
+	while (command_wrappers[index].command != NULL) {
+		if (0 == strcmp(command_wrappers[index].command, con->current_command->command)) {
+			command_wrappers[index].handler(con, con->current_command->argument_count, con->current_command->arguments);
 			return;
 		}
 		index++;
@@ -200,15 +116,33 @@ void console_free(struct console *con)
 	if (con == NULL) {
 		return;
 	}
-	memset(con->input_buffer, 0, CONSOLE_MAX_INPUT_SIZE);
-	con->current_position = 0;
-	con->current_length = 0;
+
+	input_free(con->input_buffer);
+	free(con->input_buffer);
+	con->input_buffer = NULL;
+
+	input_free(con->input_backup);
+	free(con->input_backup);
+	con->input_backup = NULL;
+
 	history_free(con->input_history);
 	free(con->input_history);
 	con->input_history = NULL;
+
 	command_free(con->current_command);
 	free(con->current_command);
 	con->current_command = NULL;
+
+	terminal_set_terminal(con->original_terminal);
+	print_disable_alt_screen();
+
+	terminal_free(con->original_terminal);
+	free(con->original_terminal);
+	con->original_terminal = NULL;
+
+	terminal_free(con->raw_terminal);
+	free(con->raw_terminal);
+	con->raw_terminal = NULL;
 }
 
 void console_init(struct console *con)
@@ -216,15 +150,28 @@ void console_init(struct console *con)
 	if (con == NULL) {
 		return;
 	}
-	memset(con->input_buffer, 0, CONSOLE_MAX_INPUT_SIZE);
-	con->current_position = 0;
-	con->current_length = 0;
+
+	con->input_buffer = (struct input *)malloc(sizeof(struct input));
+	if (con->input_buffer == NULL) {
+		printf("console_init con->input_buffer malloc failed\r\n");
+		exit(1);
+	}
+	input_init(con->input_buffer);
+
+	con->input_backup = (struct input *)malloc(sizeof(struct input));
+	if (con->input_backup == NULL) {
+		printf("console_init con->input_backup malloc failed\r\n");
+		exit(1);
+	}
+	input_init(con->input_backup);
+
 	con->input_history = (struct history *)malloc(sizeof(struct history));
 	if (con->input_history == NULL) {
 		printf("console_init con->input_history malloc failed\r\n");
 		exit(1);
 	}
 	history_init(con->input_history);
+
 	con->current_command = (struct command *)
 	                       malloc(sizeof(struct command));
 	if (con->current_command == NULL) {
@@ -232,11 +179,28 @@ void console_init(struct console *con)
 		exit(1);
 	}
 	command_init(con->current_command);
+
+	con->original_terminal = (struct termios *)malloc(sizeof(struct termios));
+	if (con->original_terminal == NULL) {
+		printf("console_init con->original_terminal malloc failed\r\n");
+		exit(1);
+	}
+	terminal_init(con->original_terminal);
+
+	con->raw_terminal = (struct termios *)malloc(sizeof(struct termios));
+	if (con->raw_terminal == NULL) {
+		printf("console_init con->raw_terminal malloc failed\r\n");
+		exit(1);
+	}
+	terminal_init(con->raw_terminal);
+	terminal_enable_raw_terminal(con->raw_terminal);
+	terminal_set_terminal(con->raw_terminal);
+	print_enable_alt_screen();
 }
 
 void console_run(struct console *con)
 {
-	int bytes_read = 0;
+	size_t bytes_read = 0;
 	char ch = 0;
 	if (con == NULL) {
 		return;
@@ -252,7 +216,7 @@ void console_run(struct console *con)
 		print_line_reset();
 		print_input_prompt();
 		printf("%s", con->input_buffer);
-		print_set_cursor_position(con->current_position + 1);
+		print_set_cursor_position(con->input_buffer->cursor_position + 1);
 		fflush(stdout);
 	}
 }
@@ -291,6 +255,7 @@ int console_command_quit(struct console *con, size_t argc, char **argv)
 		printf("\r\n");
 		return -1;
 	}
+	console_free(con);
 	exit(0);
 	return 0;
 }
@@ -685,6 +650,191 @@ int console_command_mmwd(struct console *con, size_t argc, char **argv)
 		printf("mmwd error occured\r\n");
 		return -1;
 	}
+	return 0;
+}
+
+int console_char_idle(struct console *con, char ch)
+{
+	return 0;
+}
+
+int console_char_printable(struct console *con, char ch)
+{
+	if (con == NULL) {
+		return -1;
+	}
+
+	input_insert_byte(con->input_buffer, ch);
+	return 0;
+}
+
+int console_char_newline(struct console *con, char ch)
+{
+	if (con == NULL) {
+		return -1;
+	}
+
+	input_clear(con->input_backup);
+	command_string_to_command(con->input_buffer->buffer, con->current_command);
+	print_newline();
+	if (con->current_command->command != NULL) {
+		history_add(con->input_history, con->input_buffer->buffer);
+		console_execute_command(con);
+	}
+	input_clear(con->input_buffer);
+	command_free(con->current_command);
+	return 0;
+}
+
+int console_char_backspace(struct console *con, char ch)
+{
+	if (con == NULL) {
+		return -1;
+	}
+
+	input_backspace(con->input_buffer);
+	return 0;
+}
+
+int console_char_esc(struct console *con, char ch)
+{
+	enum esc_sequence seq = 0;
+
+	if (con == NULL) {
+		return -1;
+	}
+
+	seq = esc_get_esc_sequence();
+	console_do_action_for_esc(con, seq);
+	return 0;
+}
+
+int console_char_interrupt(struct console *con, char ch)
+{
+	if (con == NULL) {
+		return -1;
+	}
+
+	input_clear(con->input_buffer);
+	printf("\r\nInput interrupted\r\n");
+	return 0;
+}
+
+int console_char_quit(struct console *con, char ch)
+{
+	if (con == NULL) {
+		return -1;
+	}
+
+	console_free(con);
+	exit(0);
+	return 0;
+}
+
+int console_char_unsupported(struct console *con, char ch)
+{
+	return 0;
+}
+
+int console_esc_esc_key(struct console *con)
+{
+	if (con == NULL) {
+		return -1;
+	}
+
+	return 0;
+}
+
+int console_esc_arrow_up(struct console *con)
+{
+	if (con == NULL) {
+		return -1;
+	}
+
+	if (con->input_history->current_node == con->input_history->tail_node) {
+		return 0;
+	}
+	if (con->input_history->current_node == con->input_history->head_node) {
+		input_copy_input(con->input_backup, con->input_buffer);
+	}
+	if (con->input_history->current_node->prev_node != con->input_history->tail_node) {
+		history_current_node_up(con->input_history);
+		input_set_buffer(con->input_buffer, con->input_history->current_node->input);
+	}
+	return 0;
+}
+
+int console_esc_arrow_down(struct console *con)
+{
+	if (con == NULL) {
+		return -1;
+	}
+
+	if (con->input_history->current_node == con->input_history->head_node) {
+		return 0;
+	}
+	if (con->input_history->current_node->next_node == con->input_history->head_node) {
+		history_current_node_down(con->input_history);
+		input_copy_input(con->input_buffer, con->input_backup);
+	}
+	if (con->input_history->current_node != con->input_history->head_node) {
+		history_current_node_down(con->input_history);
+		input_set_buffer(con->input_buffer, con->input_history->current_node->input);
+	}
+	return 0;
+}
+
+int console_esc_arrow_right(struct console *con)
+{
+	if (con == NULL) {
+		return -1;
+	}
+
+	input_move_cursor_right(con->input_buffer);
+	print_set_cursor_position(con->input_buffer->cursor_position);
+	return 0;
+}
+
+int console_esc_arrow_left(struct console *con)
+{
+	if (con == NULL) {
+		return -1;
+	}
+
+	input_move_cursor_left(con->input_buffer);
+	print_set_cursor_position(con->input_buffer->cursor_position);
+	return 0;
+}
+
+int console_esc_home(struct console *con)
+{
+	if (con == NULL) {
+		return -1;
+	}
+
+	input_move_cursor_home(con->input_buffer);
+	print_set_cursor_position(con->input_buffer->cursor_position);
+	return 0;
+}
+
+int console_esc_end(struct console *con)
+{
+	if (con == NULL) {
+		return -1;
+	}
+
+	input_move_cursor_end(con->input_buffer);
+	print_set_cursor_position(con->input_buffer->cursor_position);
+	return 0;
+}
+
+int console_esc_unsupported(struct console *con)
+{
+	if (con == NULL) {
+		return -1;
+	}
+
+	printf("\r\nThis escape sequence is not supported yet\r\n");
 	return 0;
 }
 

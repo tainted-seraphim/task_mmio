@@ -1,3 +1,5 @@
+/* Date: 09.03.2025 */
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -6,9 +8,11 @@
 void command_free(struct command *cmd)
 {
 	size_t index = 0;
+
 	if (cmd == NULL) {
 		return;
 	}
+
 	free(cmd->command);
 	cmd->command = NULL;
 	for (index = 0; index < cmd->argument_count; index++) {
@@ -25,6 +29,7 @@ void command_init(struct command *cmd)
 	if (cmd == NULL) {
 		return;
 	}
+
 	cmd->command = NULL;
 	cmd->arguments = NULL;
 	cmd->argument_count = 0;
@@ -36,10 +41,12 @@ void command_string_to_command(const char *str, struct command *cmd)
 	char *token = NULL;
 	size_t count = 0;
 	size_t len = 0;
+
 	command_free(cmd);
 	if (cmd == NULL || str == NULL || *str == 0) {
 		return;
 	}
+
 	len = strlen(str);
 	temp_str = (char *)malloc(len + 1);
 	if (temp_str == NULL) {
@@ -50,6 +57,7 @@ void command_string_to_command(const char *str, struct command *cmd)
 	token = strtok(temp_str, " ");
 	if (token == NULL) {
 		free(temp_str);
+		command_free(cmd);
 		return;
 	}
 	len = strlen(token);

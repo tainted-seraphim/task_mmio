@@ -1,22 +1,22 @@
+/* Date: 09.03.2025 */
+
 #ifndef TASK_MMIO_CONSOLE_H
 #define TASK_MMIO_CONSOLE_H
 
 #include <unistd.h>
+#include "input.h"
 #include "command.h"
 #include "history.h"
 #include "chars.h"
 #include "esc.h"
 
-enum {
-	CONSOLE_MAX_INPUT_SIZE = 80
-};
-
 struct console {
-	char input_buffer[CONSOLE_MAX_INPUT_SIZE];
-	size_t current_position;
-	size_t current_length;
+	struct input *input_buffer;
+	struct input *input_backup;
 	struct history *input_history;
 	struct command *current_command;
+	struct termios *original_terminal;
+	struct termios *raw_terminal;
 };
 
 void console_init(struct console *con);
@@ -70,11 +70,11 @@ int console_command_mmww(struct console *con, size_t argc, char **argv);
 
 int console_command_mmwd(struct console *con, size_t argc, char **argv);
 
-typedef int (*console_char_handler)(struct console *, char); 
+typedef int (*console_char_handler)(struct console *, char);
 
 struct console_char_wrapper {
 	enum char_type type;
-	console_char_handler haldler;
+	console_char_handler handler;
 };
 
 int console_char_idle(struct console *con, char ch);
@@ -93,28 +93,28 @@ int console_char_quit(struct console *con, char ch);
 
 int console_char_unsupported(struct console *con, char ch);
 
-typedef int (*console_esc_handler)(struct console *, enum esc_sequence);
+typedef int (*console_esc_handler)(struct console *);
 
 struct console_esc_wrapper {
 	enum esc_sequence seq;
 	console_esc_handler handler;
 };
 
-int console_esc_esc_key(struct console *con, enum esc_sequence seq);
+int console_esc_esc_key(struct console *con);
 
-int console_esc_arrow_up(struct console *con, enum esc_sequence seq);
+int console_esc_arrow_up(struct console *con);
 
-int console_esc_arrow_down(struct console *con, enum esc_sequence seq);
+int console_esc_arrow_down(struct console *con);
 
-int console_esc_arrow_right(struct console *con, enum esc_sequence seq);
+int console_esc_arrow_right(struct console *con);
 
-int console_esc_arrow_left(struct console *con, enum esc_sequence seq);
+int console_esc_arrow_left(struct console *con);
 
-int console_esc_home(struct console *con, enum esc_sequence seq);
+int console_esc_home(struct console *con);
 
-int console_esc_end(struct console *con, enum esc_sequence seq);
+int console_esc_end(struct console *con);
 
-int console_esc_unsupported(struct console *con, enum esc_sequence seq);
+int console_esc_unsupported(struct console *con);
 
 #endif
 

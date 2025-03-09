@@ -1,3 +1,5 @@
+/* Date: 09.03.2025 */
+
 #include <stdlib.h>
 #include <string.h>
 #include "input.h"
@@ -66,6 +68,7 @@ void input_set_cursor_position(struct input *input, size_t pos)
 
 void input_auto_set_fields(struct input *input)
 {
+	/* Sets cursor_position and input_length based on buffer contents */
 	char *dest = NULL;
 	size_t count = 0;
 	size_t len = 0;
@@ -247,7 +250,7 @@ void input_move_cursor_end(struct input *input)
 	if (input == NULL) {
 		return;
 	}
-	
+
 	input->cursor_position = input->input_length;
 }
 

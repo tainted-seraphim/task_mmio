@@ -1,3 +1,5 @@
+/* Date: 09.03.2025 */
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -10,7 +12,7 @@ void history_add(struct history *hist, const char *input)
 	struct history_node *new_node = NULL;
 	struct history_node *temp = NULL;
 
-	if (hist == NULL || input == NULL) {
+	if (hist == NULL || input == NULL || *input == 0) {
 		return;
 	}
 
@@ -46,6 +48,7 @@ void history_add(struct history *hist, const char *input)
 		hist->head_node->prev_node = new_node;
 		hist->node_count++;
 	}
+	hist->current_node = hist->head_node;
 	temp = NULL;
 	new_node = NULL;
 }
@@ -72,6 +75,7 @@ void history_free(struct history *hist)
 	}
 	hist->tail_node = NULL;
 	hist->head_node = NULL;
+	hist->current_node = NULL;
 	hist->node_count = 0;
 }
 
@@ -97,6 +101,7 @@ void history_init(struct history *hist)
 	history_node_init(hist->head_node);
 	hist->tail_node->next_node = hist->head_node;
 	hist->head_node->prev_node = hist->tail_node;
+	hist->current_node = hist->head_node;
 	hist->node_count = 0;
 }
 
@@ -173,5 +178,35 @@ static int get_max_number_length(size_t number)
 		number /= 10;
 	}
 	return len;
+}
+
+void history_current_node_up(struct history *hist)
+{
+	if (hist == NULL) {
+		return;
+	}
+	if (hist->current_node == NULL) {
+		return;
+	}
+	if (hist->current_node == hist->tail_node) {
+		return;
+	}
+
+	hist->current_node = hist->current_node->prev_node;
+}
+
+void history_current_node_down(struct history *hist)
+{
+	if (hist == NULL) {
+		return;
+	}
+	if (hist->current_node == NULL) {
+		return;
+	}
+	if (hist->current_node == hist->head_node) {
+		return;
+	}
+
+	hist->current_node = hist->current_node->next_node;
 }
 

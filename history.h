@@ -1,3 +1,5 @@
+/* Date: 09.03.2025 */
+
 #ifndef TASK_MMIO_HISTORY_H
 #define TASK_MMIO_HISTORY_H
 
@@ -14,6 +16,7 @@ struct history_node {
 struct history {
 	struct history_node *tail_node;
 	struct history_node *head_node;
+	struct history_node *current_node;
 	size_t node_count;
 };
 
@@ -25,11 +28,15 @@ void history_node_free(struct history_node *node);
 
 void history_init(struct history *hist);
 
-void history_add(struct history *hist, const char unsigned *input);
+void history_add(struct history *hist, const char *input);
 
 void history_print(const struct history *hist);
 
 void history_free(struct history *hist);
+
+void history_current_node_up(struct history *hist);
+
+void history_current_node_down(struct history *hist);
 
 #endif
 

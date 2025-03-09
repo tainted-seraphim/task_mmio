@@ -1,3 +1,5 @@
+/* Date: 09.03.2025 */
+
 #include <unistd.h>
 #include <string.h>
 #include "chars.h"

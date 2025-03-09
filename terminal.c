@@ -1,3 +1,5 @@
+/* Date: 09.03.2025 */
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -16,7 +18,7 @@ void terminal_init(struct termios *terminal)
 
 	if (base_terminal == NULL) {
 		base_terminal = (struct termios *)malloc(sizeof(struct termios));
-		if (base == NULL) {
+		if (base_terminal == NULL) {
 			printf("terminal_init base_terminal malloc failed\r\n");
 			exit(1);
 		}
@@ -50,7 +52,7 @@ void terminal_enable_raw_terminal(struct termios *terminal)
 	terminal->c_cc[VTIME] = 1;
 }
 
-void terminal_reset_terminal(struct termios *terminal)
+void terminal_disable_raw_terminal(struct termios *terminal)
 {
 	if (terminal == NULL) {
 		return;
@@ -65,6 +67,6 @@ void terminal_set_terminal(struct termios *terminal)
 		return;
 	}
 
-	tcsetattr(0, TSCAFLUSH, terminal);
+	tcsetattr(0, TCSAFLUSH, terminal);
 }
 
