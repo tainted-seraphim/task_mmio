@@ -59,3 +59,12 @@ void terminal_reset_terminal(struct termios *terminal)
 	memmove(terminal, base_terminal, sizeof(struct termios));
 }
 
+void terminal_set_terminal(struct termios *terminal)
+{
+	if (terminal == NULL) {
+		return;
+	}
+
+	tcsetattr(0, TSCAFLUSH, terminal);
+}
+

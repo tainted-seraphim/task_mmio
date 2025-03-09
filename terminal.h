@@ -11,5 +11,7 @@ void terminal_enable_raw_terminal(struct termios *terminal);
 
 void terminal_reset_terminal(struct termios *terminal);
 
+void terminal_set_terminal(struct termios *terminal);
+
 #endif
 
