@@ -164,7 +164,7 @@ int mmio_ioww(uintptr_t port, uint16_t value)
 
 int mmio_mmrb(uintptr_t mem, uint8_t *output)
 {
-	void *map_base = NULL;
+	char *map_base = NULL;
 	size_t page_size = 0;
 	size_t shift = 0;
 	int mem_fd = -1;
@@ -190,7 +190,7 @@ int mmio_mmrb(uintptr_t mem, uint8_t *output)
 		*output = -1;
 		return -1;
 	}
-	*output = *((uint8_t *)(map_base) + shift);
+	*output = *((uint8_t *)(map_base + shift));
 	munmap(map_base, page_size);
 	close(mem_fd);
 	return 0;
@@ -198,7 +198,7 @@ int mmio_mmrb(uintptr_t mem, uint8_t *output)
 
 int mmio_mmrd(uintptr_t mem, uint32_t *output)
 {
-	void *map_base = NULL;
+	char *map_base = NULL;
 	size_t page_size = 0;
 	size_t shift = 0;
 	int mem_fd = -1;
@@ -224,7 +224,7 @@ int mmio_mmrd(uintptr_t mem, uint32_t *output)
 		*output = -1;
 		return -1;
 	}
-	*output = *((uint32_t *)(map_base) + shift);
+	*output = *((uint32_t *)(map_base + shift));
 	munmap(map_base, page_size);
 	close(mem_fd);
 	return 0;
@@ -232,7 +232,7 @@ int mmio_mmrd(uintptr_t mem, uint32_t *output)
 
 int mmio_mmrw(uintptr_t mem, uint16_t *output)
 {
-	void *map_base = NULL;
+	char *map_base = NULL;
 	size_t page_size = 0;
 	size_t shift = 0;
 	int mem_fd = -1;
@@ -258,7 +258,7 @@ int mmio_mmrw(uintptr_t mem, uint16_t *output)
 		*output = -1;
 		return -1;
 	}
-	*output = *((uint16_t *)(map_base) + shift);
+	*output = *((uint16_t *)(map_base + shift));
 	munmap(map_base, page_size);
 	close(mem_fd);
 	return 0;
@@ -266,7 +266,7 @@ int mmio_mmrw(uintptr_t mem, uint16_t *output)
 
 int mmio_mmwb(uintptr_t mem, uint8_t value)
 {
-	void *map_base = NULL;
+	char *map_base = NULL;
 	size_t page_size = 0;
 	size_t shift = 0;
 	int mem_fd = -1;
@@ -286,7 +286,7 @@ int mmio_mmwb(uintptr_t mem, uint8_t value)
 		close(mem_fd);
 		return -1;
 	}
-	*((uint8_t *)(map_base) + shift) = value;
+	*((uint8_t *)(map_base + shift)) = value;
 	munmap(map_base, page_size);
 	close(mem_fd);
 	return 0;
@@ -294,7 +294,7 @@ int mmio_mmwb(uintptr_t mem, uint8_t value)
 
 int mmio_mmwd(uintptr_t mem, uint32_t value)
 {
-	void *map_base = NULL;
+	char *map_base = NULL;
 	size_t page_size = 0;
 	size_t shift = 0;
 	int mem_fd = -1;
@@ -314,7 +314,7 @@ int mmio_mmwd(uintptr_t mem, uint32_t value)
 		close(mem_fd);
 		return -1;
 	}
-	*((uint32_t *)(map_base) + shift) = value;
+	*((uint32_t *)(map_base + shift)) = value;
 	munmap(map_base, page_size);
 	close(mem_fd);
 	return 0;
@@ -322,7 +322,7 @@ int mmio_mmwd(uintptr_t mem, uint32_t value)
 
 int mmio_mmww(uintptr_t mem, uint16_t value)
 {
-	void *map_base = NULL;
+	char *map_base = NULL;
 	size_t page_size = 0;
 	size_t shift = 0;
 	int mem_fd = -1;
@@ -342,7 +342,7 @@ int mmio_mmww(uintptr_t mem, uint16_t value)
 		close(mem_fd);
 		return -1;
 	}
-	*((uint8_t *)(map_base) + shift) = value;
+	*((uint16_t *)(map_base + shift)) = value;
 	munmap(map_base, page_size);
 	close(mem_fd);
 	return 0;
