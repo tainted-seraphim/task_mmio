@@ -88,7 +88,7 @@ void print_enable_alt_screen(void)
 	printf(TASK_MMIO_ESC_SCREEN_SAVE);
 	printf(TASK_MMIO_ESC_SCREEN_ENABLE_ALT);
 	printf(TASK_MMIO_ESC_SCREEN_CLEAR);
-	printf(TASK_MMIO_ESC_SCREEN_TOP);	
+	printf(TASK_MMIO_ESC_SCREEN_TOP);
 }
 
 void print_disable_alt_screen(void)

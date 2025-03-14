@@ -215,7 +215,7 @@ void console_run(struct console *con)
 		console_do_action_for_char(con, ch);
 		print_line_reset();
 		print_input_prompt();
-		printf("%s", con->input_buffer);
+		printf("%s", con->input_buffer->buffer);
 		print_set_cursor_position(con->input_buffer->cursor_position + 1);
 		fflush(stdout);
 	}
